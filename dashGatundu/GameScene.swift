@@ -37,7 +37,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         cam.position.x = ball.position.x + 500
         ball.physicsBody?.velocity.dx = 400
         cam.position.y = ball.position.y
-       // scoreLabel.position.x = ball.position.x
+        scoreLabel.position.x = ball.position.x
     }
     
     // gets clled when it hears a collision

@@ -54,7 +54,7 @@ class GameViewController: UIViewController {
     {
     print("jump")
         if scene2.canJump == true {
-            scene2.ball.physicsBody?.velocity.dy = 500
+            scene2.ball.physicsBody?.velocity.dy = 1000
             scene2.canJump = false
         }
     }
