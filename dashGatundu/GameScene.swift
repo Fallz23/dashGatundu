@@ -1,88 +1,103 @@
 //
 //  GameScene.swift
-//  dashGatundu
+//  gameNotes26New
 //
-//  Created by JOSHUA GATUNDU on 1/14/26.
+//  Created by JOSHUA GATUNDU on 1/7/26.
 //
 
 import SpriteKit
 import GameplayKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
-    private var label : SKLabelNode?
-    private var spinnyNode : SKShapeNode?
+    var vc: GameViewController!
+    var canJump = true
+    var score = 0
+    var ball: SKSpriteNode!
+    var scoreLabel: SKLabelNode!
+    let cam = SKCameraNode()
     
+    
+    // gets called once as the scene loads
     override func didMove(to view: SKView) {
+        ball = self.childNode(withName: "ball") as? SKSpriteNode
+        scoreLabel = self.childNode(withName: "scoreLabel") as? SKLabelNode
         
-        // Get label node from scene and store it for use later
-        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-        if let label = self.label {
-            label.alpha = 0.0
-            label.run(SKAction.fadeIn(withDuration: 2.0))
-        }
         
-        // Create shape node to use during mouse interaction
-        let w = (self.size.width + self.size.height) * 0.05
-        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
+        self.camera = cam
         
-        if let spinnyNode = self.spinnyNode {
-            spinnyNode.lineWidth = 2.5
-            
-            spinnyNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-            spinnyNode.run(SKAction.sequence([SKAction.wait(forDuration: 0.5),
-                                              SKAction.fadeOut(withDuration: 0.5),
-                                              SKAction.removeFromParent()]))
-        }
+        physicsWorld.contactDelegate = self
     }
     
     
-    func touchDown(atPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.green
-            self.addChild(n)
-        }
-    }
-    
-    func touchMoved(toPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.blue
-            self.addChild(n)
-        }
-    }
-    
-    func touchUp(atPoint pos : CGPoint) {
-        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-            n.position = pos
-            n.strokeColor = SKColor.red
-            self.addChild(n)
-        }
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let label = self.label {
-            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-        }
-        
-        for t in touches { self.touchDown(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchMoved(toPoint: t.location(in: self)) }
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-    }
-    
-    
+    // gets called every FPS
     override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
+        // makes camera follow the ball
+        //cam.position = ball.position
+        cam.position.x = ball.position.x + 500
+        ball.physicsBody?.velocity.dx = 400
+        cam.position.y = ball.position.y
+       // scoreLabel.position.x = ball.position.x
     }
+    
+    // gets clled when it hears a collision
+    func didBegin(_ contact: SKPhysicsContact) {
+        print("hit")
+        if contact.bodyA.node?.name == "spike" && contact.bodyB.node?.name == "ball"{
+         //   print("add 1 coin")
+            respawn()
+           // contact.bodyA.node?.removeFromParent()
+          //  score+=1
+          //  scoreLabel.text = "\(score)"
+        }
+        if contact.bodyB.node?.name == "spike" && contact.bodyA.node?.name == "ball"{
+          //  print("add 1 coin")
+            respawn()
+           // contact.bodyB.node?.removeFromParent()
+          //  score+=1
+           // scoreLabel.text = "\(score)"
+
+        }
+        
+        if contact.bodyA.node?.name == "ground" && contact.bodyB.node?.name == "ball"{
+         //   print("add 1 coin")
+            canJump = true
+           // contact.bodyA.node?.removeFromParent()
+          //  score+=1
+          //  scoreLabel.text = "\(score)"
+        }
+        if contact.bodyB.node?.name == "ground" && contact.bodyA.node?.name == "ball"{
+          //  print("add 1 coin")
+            canJump = true
+           // contact.bodyB.node?.removeFromParent()
+          //  score+=1
+           // scoreLabel.text = "\(score)"
+
+        }
+        
+        if contact.bodyA.node?.name == "coin" && contact.bodyB.node?.name == "ball"{
+         //   print("add 1 coin")
+            
+            contact.bodyA.node?.removeFromParent()
+            score+=1
+            scoreLabel.text = "\(score)"
+        }
+        if contact.bodyB.node?.name == "coin" && contact.bodyA.node?.name == "ball"{
+          //  print("add 1 coin")
+            contact.bodyB.node?.removeFromParent()
+            score+=1
+            scoreLabel.text = "\(score)"
+
+        }
+        
+        
+        
+        func respawn(){
+            let start = SKAction.move(to: CGPoint(x: -400, y: 0), duration: 0)
+            ball.run(start)
+        }
+    }
+    
+    
+  
 }
